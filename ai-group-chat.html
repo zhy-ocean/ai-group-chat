@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>AI 思想碰撞实验室 · 修复增强版 🤖💥</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['"JetBrains Mono"', '"Fira Code"', '"Consolas"', '"Monaco"', '"Courier New"', 'monospace'],
+                        sans: ['"Noto Sans SC"', '"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', '"WenQuanYi Micro Hei"', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(99, 102, 241, 0.5)' },
+                            '100%': { boxShadow: '0 0 20px rgba(99, 102, 241, 0.8)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            overflow-x: hidden;
+            font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .message-bubble {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .message-bubble:hover {
+            transform: translateX(5px);
+        }
+        .typing-indicator span {
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 100% { opacity: 0.2; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-5px); }
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .ai-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* 自定义滚动条样式 - 用于聊天记录区域 */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 4px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-corner {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        /* Firefox 滚动条样式 */
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #4f46e5 rgba(15, 23, 42, 0.5);
+        }
+        
+        /* 侧边栏滚动条样式 - 更窄一些 */
+        .sidebar-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar-scrollbar::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 3px;
+        }
+        .sidebar-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 3px;
+        }
+        .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.8);
+        }
+        .sidebar-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(99, 102, 241, 0.5) rgba(30, 41, 59, 0.5);
+        }
+        
+        .combobox-container {
+            position: relative;
+        }
+        .combobox-input {
+            width: 100%;
+            background: #111827;
+            border: 1px solid #374151;
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.5rem;
+            font-size: 0.75rem;
+            color: #d1d5db;
+        }
+        .combobox-input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .combobox-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 0.375rem;
+            margin-top: 4px;
+            z-index: 100;
+            display: none;
+        }
+        .combobox-dropdown.show {
+            display: block;
+        }
+        .combobox-option {
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: #d1d5db;
+            border-bottom: 1px solid #374151;
+        }
+        .combobox-option:hover {
+            background: #374151;
+        }
+        .combobox-option:last-child {
+            border-bottom: none;
+        }
+        .combobox-option .model-name {
+            font-weight: 600;
+            color: #fff;
+        }
+        .combobox-option .model-desc {
+            font-size: 0.65rem;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+        .provider-badge {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+        .at-dropdown {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 50;
+            min-width: 200px;
+        }
+        .at-dropdown-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+        .at-dropdown-item:hover {
+            background: #374151;
+        }
+        .mention-tag {
+            background: rgba(99, 102, 241, 0.3);
+            color: #818cf8;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            border: 1px solid rgba(99, 102, 241, 0.5);
+        }
+        .flagship-badge {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            color: white;
+            font-size: 0.6rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            margin-left: 0.25rem;
+        }
+        .mode-toggle {
+            display: flex;
+            background: #111827;
+            border-radius: 0.375rem;
+            padding: 2px;
+            border: 1px solid #374151;
+        }
+        .mode-option {
+            flex: 1;
+            padding: 0.375rem 0.5rem;
+            text-align: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+            color: #6b7280;
+        }
+        .mode-option.active {
+            background: #374151;
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+        .mode-option.context-mode.active {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+        }
+        .mode-option.independent-mode.active {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .mode-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        .mode-indicator.context {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .mode-indicator.independent {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .token-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .token-stats {
+            background: rgba(6, 78, 59, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+        }
+        .token-stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+            color: #34d399;
+            font-weight: 600;
+        }
+        /* 响应式优化 */
+        @media (max-width: 768px) {
+            aside.w-96 {
+                width: 100%;
+                max-width: 100%;
+            }
+            .flex-1.flex {
+                flex-direction: column;
+            }
+            header .flex.items-center.gap-4 {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-100 h-screen flex flex-col">
+
+    <!-- ========== 头部 ========== -->
+    <header class="glass-panel border-b border-gray-700 px-6 py-4 flex flex-wrap justify-between items-center z-50 gap-2">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full ai-avatar flex items-center justify-center text-white font-bold text-lg animate-pulse-slow">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold gradient-text">AI 思想碰撞实验室</h1>
+                <p class="text-xs text-gray-400 font-mono">支持上下文联动与独立观点两种模式 · Token实时监控</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-4 flex-wrap">
+            <!-- 全局Token统计 + 重置按钮 -->
+            <div class="flex items-center gap-1 px-4 py-2 rounded-full bg-gray-800 border border-gray-700">
+                <i class="fas fa-coins text-yellow-500 text-xs"></i>
+                <span class="text-sm text-gray-300 font-mono" id="global-token-count">0 tokens</span>
+                <button onclick="resetTokenStats()" class="ml-1 px-2 py-1 text-xs rounded bg-yellow-600/30 text-yellow-400 hover:bg-yellow-600/50 transition-all" title="重置Token统计">
+                    <i class="fas fa-undo-alt"></i>
+                </button>
+            </div>
+            <!-- 计时器 -->
+            <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800 border border-gray-700">
+                <i class="fas fa-stopwatch text-yellow-500"></i>
+                <span id="timer-display" class="text-sm font-mono text-yellow-400">00:00:00</span>
+                <button onclick="toggleTimer()" id="timer-btn" class="ml-2 text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 transition-all">
+                    <i class="fas fa-play" id="timer-icon"></i>
+                </button>
+                <button onclick="resetTimer()" class="text-xs px-2 py-1 rounded bg-gray-700 text-gray-400 hover:bg-gray-600 transition-all" title="重置计时器">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800 border border-gray-700">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-sm text-gray-300" id="status-text">就绪</span>
+            </div>
+            <button onclick="toggleAutoMode()" id="auto-mode-btn" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-2 font-medium">
+                <i class="fas fa-play"></i>
+                <span>自动碰撞</span>
+            </button>
+            <button onclick="clearChat()" class="px-4 py-2 rounded-lg bg-red-600/80 hover:bg-red-700 transition-all text-sm">
+                <i class="fas fa-trash"></i>
+            </button>
+            <button onclick="exportChat()" class="px-4 py-2 rounded-lg bg-emerald-600/80 hover:bg-emerald-700 transition-all text-sm flex items-center gap-2">
+                <i class="fas fa-download"></i>
+                <span>导出</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden flex-col md:flex-row">
+        <!-- ========== 侧边栏：AI配置 ========== -->
+        <aside class="w-full md:w-96 glass-panel border-r border-gray-700 flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800/30">
+                <h2 class="font-bold text-gray-200 flex items-center gap-2">
+                    <i class="fas fa-robot text-indigo-400"></i>
+                    AI 参与者配置
+                    <span class="text-xs bg-indigo-600 px-2 py-0.5 rounded-full" id="ai-count">0</span>
+                </h2>
+                <button onclick="addAI()" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+                    <i class="fas fa-plus-circle text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 侧边栏添加滚动条 -->
+            <div id="ai-list" class="flex-1 overflow-y-auto p-4 space-y-4 sidebar-scrollbar">
+                <!-- AI配置项动态渲染 -->
+            </div>
+
+            <div class="p-4 border-t border-gray-700 bg-gray-800/50">
+                <div class="text-xs text-gray-500 mb-2 font-mono flex justify-between">
+                    <span>系统提示词 (全局)</span>
+                    <span class="text-indigo-400 cursor-pointer hover:underline" onclick="showPromptTemplates()">加载模板</span>
+                </div>
+                <textarea id="global-system-prompt" rows="3" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-xs text-gray-300 focus:outline-none focus:border-indigo-500 resize-none" placeholder="输入全局系统提示词，影响所有AI的行为...">你是一个富有创造力的AI助手，正在参与一个多学科的思想碰撞讨论。请保持开放思维，积极回应其他AI的观点，提出建设性的批评或补充。</textarea>
+            </div>
+        </aside>
+
+        <!-- ========== 主聊天区 ========== -->
+        <main class="flex-1 flex flex-col bg-gray-900/50 relative">
+            <!-- 话题引导 + 预设下拉 -->
+            <div class="p-4 glass-panel border-b border-gray-700">
+                <div class="flex gap-2 items-center flex-wrap">
+                    <div class="flex-1 relative min-w-[200px]">
+                        <input type="text" id="topic-input" placeholder="输入话题或问题来引导AI讨论... (使用 @ 点名特定AI)" 
+                            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 pl-10 text-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                            onkeypress="if(event.key==='Enter')sendTopic()">
+                        <i class="fas fa-lightbulb absolute left-3 top-1/2 -translate-y-1/2 text-yellow-500"></i>
+                    </div>
+                    <select onchange="loadTopicPreset(this.value)" class="bg-gray-800 border border-gray-700 rounded-lg px-2 py-3 text-sm text-gray-200 focus:outline-none focus:border-indigo-500">
+                        <option value="">📋 话题预设</option>
+                        <option value="ai_safety">AI 安全与对齐</option>
+                        <option value="agi_timeline">AGI 实现时间线预测</option>
+                        <option value="coding_future">编程的未来：AI 替代还是辅助？</option>
+                        <option value="climate">气候变化解决方案</option>
+                        <option value="philosophy">意识与强人工智能</option>
+                    </select>
+                    <button onclick="sendTopic()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium transition-all flex items-center gap-2">
+                        <span>发起讨论</span>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="mt-2 flex gap-2 flex-wrap" id="quick-mentions">
+                    <!-- 快速@按钮动态生成 -->
+                </div>
+                <div class="mt-2 flex items-center gap-4 text-xs text-gray-400 bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 flex-wrap">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-info-circle text-indigo-400"></i>
+                        模式说明：
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                        联动模式：AI会参考上一位的回答
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                        独立模式：AI只回答自己的观点
+                    </span>
+                </div>
+            </div>
+
+            <!-- 聊天记录容器 - 使用自定义滚动条 -->
+            <div id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                <div class="text-center text-gray-500 py-10">
+                    <i class="fas fa-comments text-4xl mb-3 opacity-50"></i>
+                    <p>点击"添加AI"配置参与者，选择厂商和模型后发起话题</p>
+                    <p class="text-sm mt-2 text-gray-600">输入 @ 可以点名特定AI发言，或使用"全体讨论"让所有人参与</p>
+                    <div class="mt-4 flex justify-center gap-2 text-xs flex-wrap">
+                        <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">OpenAI</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">Claude</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">Gemini</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">Kimi</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">DeepSeek</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">智谱GLM-4.7</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">豆包</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">MiniMax 2.1</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">通义千问</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部输入区 + @下拉 -->
+            <div class="p-4 glass-panel border-t border-gray-700 relative">
+                <!-- @下拉菜单 -->
+                <div id="at-dropdown" class="at-dropdown hidden">
+                    <div class="p-2 text-xs text-gray-500 border-b border-gray-700">选择要@的AI (仅被选中的AI会回应)</div>
+                    <div id="at-list"></div>
+                    <div class="p-2 text-xs text-gray-400 border-t border-gray-700 hover:bg-gray-700 cursor-pointer" onclick="selectAllAIs()">
+                        <i class="fas fa-users mr-1"></i> 全体参与讨论
+                    </div>
+                </div>
+
+                <div class="flex gap-3 items-end">
+                    <div class="flex-1 relative">
+                        <div class="absolute left-3 top-3 text-indigo-400 cursor-pointer hover:text-indigo-300" onclick="toggleAtDropdown()">
+                            <i class="fas fa-at"></i>
+                        </div>
+                        <textarea id="user-input" rows="2" placeholder="以主持人身份介入讨论... 输入 @ 点名特定AI" 
+                            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 pl-10 text-gray-200 focus:outline-none focus:border-indigo-500 resize-none"
+                            oninput="handleInput(event)"
+                            onkeypress="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendUserMessage()}"></textarea>
+                        <div id="selected-mentions" class="flex gap-1 mt-1 flex-wrap"></div>
+                    </div>
+                    <button onclick="sendUserMessage()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium transition-all h-fit">
+                        <i class="fas fa-send"></i>
+                    </button>
+                </div>
+                <div class="mt-2 flex justify-between items-center text-xs text-gray-500">
+                    <span>按 Enter 发送，Shift + Enter 换行，输入 @ 点名AI</span>
+                    <div class="flex gap-4 items-center">
+                        <label class="flex items-center gap-1 cursor-pointer hover:text-gray-400">
+                            <input type="checkbox" id="parallel-mode" onchange="toggleParallelMode()" class="accent-indigo-500">
+                            <span id="parallel-mode-text">并行模式（多AI同时回答）</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer hover:text-gray-400">
+                            <input type="checkbox" id="auto-scroll" checked class="accent-indigo-500">
+                            <span>自动滚动</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 厂商和模型数据库（完整保留）
+        // ==========================================
+        const PROVIDER_MODELS = {
+            openai: {
+                name: 'OpenAI',
+                icon: 'fa-brands fa-openai',
+                color: 'border-green-500',
+                bgColor: 'bg-green-500/10',
+                textColor: 'text-green-400',
+                baseUrl: 'https://api.openai.com/v1/chat/completions',
+                models: [
+                    { id: 'gpt-4.1', name: 'GPT-4.1', desc: '强大且经济的旗舰模型', flagship: true },
+                    { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', desc: '快速高效的轻量级模型' },
+                    { id: 'gpt-4.1-nano', name: 'GPT-4.1 Nano', desc: '超低成本基础模型' },
+                    { id: 'gpt-4o', name: 'GPT-4o', desc: '全能多模态旗舰' },
+                    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', desc: '小型多模态模型' },
+                    { id: 'o1', name: 'o1 (推理)', desc: '复杂推理任务专用' },
+                    { id: 'o1-mini', name: 'o1 Mini', desc: '快速推理模型' },
+                    { id: 'o3-mini', name: 'o3-mini', desc: '最新轻量推理模型' },
+                    { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', desc: '高性能版本' },
+                    { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', desc: '经济实用选择' }
+                ]
+            },
+            anthropic: {
+                name: 'Anthropic',
+                icon: 'fa-solid fa-sparkles',
+                color: 'border-orange-500',
+                bgColor: 'bg-orange-500/10',
+                textColor: 'text-orange-400',
+                baseUrl: 'https://api.anthropic.com/v1/messages',
+                models: [
+                    { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet', desc: '最新智能模型，支持扩展思考', flagship: true },
+                    { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet v2', desc: '编程和推理能力增强' },
+                    { id: 'claude-3-5-sonnet-20240620', name: 'Claude 3.5 Sonnet', desc: '平衡性能与速度' },
+                    { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', desc: '极速响应，适合对话' },
+                    { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', desc: '最强推理能力' },
+                    { id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet', desc: '均衡性能' },
+                    { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', desc: '快速轻量' }
+                ]
+            },
+            google: {
+                name: 'Google Gemini',
+                icon: 'fa-brands fa-google',
+                color: 'border-blue-500',
+                bgColor: 'bg-blue-500/10',
+                textColor: 'text-blue-400',
+                baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+                models: [
+                    { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: '最新快速模型', flagship: true },
+                    { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', desc: '超轻量极速版' },
+                    { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', desc: '专业级性能' },
+                    { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', desc: '平衡性能与速度' },
+                    { id: 'gemini-1.5-flash-8b', name: 'Gemini 1.5 Flash-8B', desc: '80亿参数轻量版' }
+                ]
+            },
+            moonshot: {
+                name: 'Moonshot (月之暗面)',
+                icon: 'fa-solid fa-moon',
+                color: 'border-purple-500',
+                bgColor: 'bg-purple-500/10',
+                textColor: 'text-purple-400',
+                baseUrl: 'https://api.moonshot.cn/v1/chat/completions',
+                models: [
+                    { id: 'kimi-k2.5', name: 'Kimi K2.5', desc: '旗舰模型，Agent Swarm支持', flagship: true },
+                    { id: 'kimi-k2-0905-preview', name: 'Kimi K2 (0905)', desc: 'K2预览版' },
+                    { id: 'kimi-k2-turbo-preview', name: 'Kimi K2 Turbo', desc: '加速版K2' },
+                    { id: 'moonshot-v1-auto', name: 'Moonshot V1 Auto', desc: '自动上下文长度' },
+                    { id: 'moonshot-v1-128k', name: 'Moonshot V1 128K', desc: '长上下文128K' },
+                    { id: 'moonshot-v1-32k', name: 'Moonshot V1 32K', desc: '标准32K上下文' },
+                    { id: 'moonshot-v1-8k', name: 'Moonshot V1 8K', desc: '轻量8K上下文' }
+                ]
+            },
+            deepseek: {
+                name: 'DeepSeek',
+                icon: 'fa-solid fa-water',
+                color: 'border-cyan-500',
+                bgColor: 'bg-cyan-500/10',
+                textColor: 'text-cyan-400',
+                baseUrl: 'https://api.deepseek.com/chat/completions',
+                models: [
+                    { id: 'deepseek-chat', name: 'DeepSeek V3', desc: '通用对话模型 (V3)', flagship: true },
+                    { id: 'deepseek-reasoner', name: 'DeepSeek R1', desc: '推理专用模型 (R1)' }
+                ]
+            },
+            zhipu: {
+                name: '智谱AI (Zhipu)',
+                icon: 'fa-solid fa-brain',
+                color: 'border-red-500',
+                bgColor: 'bg-red-500/10',
+                textColor: 'text-red-400',
+                baseUrl: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+                models: [
+                    { id: 'glm-4.7', name: 'GLM-4.7', desc: '2025-12-23最新旗舰，Code Arena开源第一', flagship: true },
+                    { id: 'glm-4.7-flashx', name: 'GLM-4.7-FlashX', desc: 'GLM-4.7极速版' },
+                    { id: 'glm-4-plus', name: 'GLM-4 Plus', desc: '增强版旗舰模型' },
+                    { id: 'glm-4-air', name: 'GLM-4 Air', desc: '高性价比快速版' },
+                    { id: 'glm-4-airx', name: 'GLM-4 AirX', desc: '极速响应版' },
+                    { id: 'glm-4-long', name: 'GLM-4 Long', desc: '超长上下文版本' },
+                    { id: 'glm-4-flash', name: 'GLM-4 Flash', desc: '轻量免费版' },
+                    { id: 'glm-4v', name: 'GLM-4V', desc: '视觉理解模型' },
+                    { id: 'glm-4-alltools', name: 'GLM-4 AllTools', desc: '工具调用增强版' },
+                    { id: 'glm-4-z1', name: 'GLM-Z1', desc: '深度思考模型' },
+                    { id: 'glm-4-z1-32b', name: 'GLM-Z1-32B', desc: '32B深度思考' },
+                    { id: 'glm-4-32b', name: 'GLM-4-32B', desc: '32B基础模型' },
+                    { id: 'glm-4-9b', name: 'GLM-4-9B', desc: '9B轻量开源版' }
+                ]
+            },
+            doubao: {
+                name: '豆包 (字节)',
+                icon: 'fa-solid fa-bag-shopping',
+                color: 'border-blue-400',
+                bgColor: 'bg-blue-400/10',
+                textColor: 'text-blue-300',
+                baseUrl: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
+                models: [
+                    { id: 'doubao-1.5-pro-32k', name: 'Doubao-1.5 Pro 32K', desc: '豆包1.5专业版', flagship: true },
+                    { id: 'doubao-1.5-pro-256k', name: 'Doubao-1.5 Pro 256K', desc: '豆包1.5长上下文版' },
+                    { id: 'doubao-1.5-lite-32k', name: 'Doubao-1.5 Lite 32K', desc: '豆包1.5轻量版' },
+                    { id: 'doubao-1.5-thinking-pro', name: 'Doubao-1.5 Thinking', desc: '深度思考模型' },
+                    { id: 'doubao-1.5-vision-pro', name: 'Doubao-1.5 Vision', desc: '视觉理解模型' },
+                    { id: 'doubao-1.5-vision-lite', name: 'Doubao-1.5 Vision Lite', desc: '轻量视觉模型' },
+                    { id: 'doubao-pro-32k', name: 'Doubao Pro 32K', desc: '豆包1.0专业版' },
+                    { id: 'doubao-pro-256k', name: 'Doubao Pro 256K', desc: '豆包1.0长文版' },
+                    { id: 'doubao-lite-32k', name: 'Doubao Lite 32K', desc: '豆包1.0轻量版' },
+                    { id: 'doubao-lite-128k', name: 'Doubao Lite 128K', desc: '豆包1.0长文轻量' }
+                ]
+            },
+            minimax: {
+                name: 'MiniMax',
+                icon: 'fa-solid fa-comment-dots',
+                color: 'border-indigo-400',
+                bgColor: 'bg-indigo-400/10',
+                textColor: 'text-indigo-300',
+                baseUrl: 'https://api.minimaxi.chat/v1/text/chatcompletion_v2',
+                models: [
+                    { id: 'MiniMax-M2.1', name: 'MiniMax-M2.1', desc: '2025-12-22最新旗舰，多语言编程SOTA', flagship: true },
+                    { id: 'MiniMax-M2.1-lightning', name: 'MiniMax-M2.1-Lightning', desc: 'M2.1极速版' },
+                    { id: 'MiniMax-M2', name: 'MiniMax-M2', desc: '编码和Agent工作流专用' },
+                    { id: 'MiniMax-Text-01', name: 'MiniMax-Text-01', desc: '标准文本模型' },
+                    { id: 'abab7-chat-preview', name: 'abab7-preview', desc: '7.0预览版' },
+                    { id: 'abab6.5s-chat', name: 'abab6.5s-chat', desc: '超长上下文245k' },
+                    { id: 'abab6.5t-chat', name: 'abab6.5t-chat', desc: '中文人设对话' },
+                    { id: 'abab6.5g-chat', name: 'abab6.5g-chat', desc: '英文场景专用' }
+                ]
+            },
+            qwen: {
+                name: '通义千问 (阿里云)',
+                icon: 'fa-solid fa-cloud',
+                color: 'border-orange-400',
+                bgColor: 'bg-orange-400/10',
+                textColor: 'text-orange-300',
+                baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+                models: [
+                    { id: 'qwen-max', name: 'Qwen Max', desc: '通义千问最强模型', flagship: true },
+                    { id: 'qwen-plus', name: 'Qwen Plus', desc: '平衡性能与成本' },
+                    { id: 'qwen-turbo', name: 'Qwen Turbo', desc: '极速响应' },
+                    { id: 'qwen3-max', name: 'Qwen3 Max', desc: 'Qwen3系列旗舰' },
+                    { id: 'qwen3-235b-a22b', name: 'Qwen3-235B-A22B', desc: '235B总参数MoE模型' },
+                    { id: 'qwen2.5-72b-instruct', name: 'Qwen2.5-72B', desc: '72B开源指令版' },
+                    { id: 'qwen2.5-32b-instruct', name: 'Qwen2.5-32B', desc: '32B开源版' },
+                    { id: 'qwen2.5-14b-instruct', name: 'Qwen2.5-14B', desc: '14B轻量版' },
+                    { id: 'qwen2.5-7b-instruct', name: 'Qwen2.5-7B', desc: '7B极速版' },
+                    { id: 'qwen-vl-max', name: 'Qwen VL Max', desc: '视觉理解旗舰' },
+                    { id: 'qwen-vl-plus', name: 'Qwen VL Plus', desc: '视觉理解Plus' },
+                    { id: 'qwen-coder-turbo', name: 'Qwen Coder', desc: '代码生成专用' }
+                ]
+            },
+            azure: {
+                name: 'Azure OpenAI',
+                icon: 'fa-brands fa-microsoft',
+                color: 'border-blue-600',
+                bgColor: 'bg-blue-600/10',
+                textColor: 'text-blue-500',
+                baseUrl: 'https://{your-resource}.openai.azure.com/openai/deployments/{deployment-id}/chat/completions?api-version=2024-02-01',
+                models: [
+                    { id: 'gpt-4', name: 'GPT-4', desc: 'Azure托管GPT-4' },
+                    { id: 'gpt-4-32k', name: 'GPT-4 32K', desc: '长上下文版本' },
+                    { id: 'gpt-35-turbo', name: 'GPT-3.5 Turbo', desc: '经济选择' }
+                ]
+            },
+            custom: {
+                name: '自定义 / 兼容OpenAI',
+                icon: 'fa-solid fa-gear',
+                color: 'border-gray-500',
+                bgColor: 'bg-gray-500/10',
+                textColor: 'text-gray-400',
+                baseUrl: 'https://api.custom.com/v1/chat/completions',
+                models: [
+                    { id: 'default', name: '自定义模型', desc: '手动输入模型ID' }
+                ]
+            }
+        };
+
+        // ==========================================
+        // 2. 全局状态变量
+        // ==========================================
+        let ais = JSON.parse(localStorage.getItem('ai_configs')) || [];
+        let chatHistory = [];
+        let autoMode = false;
+        let currentTypingAI = null;
+        let autoModeInterval = null;
+        let selectedMentions = new Set();
+        let globalTotalTokens = 0;
+        // 新增：并行模式状态
+        let parallelMode = false;
+
+        // 计时器状态
+        let timerInterval = null;
+        let timerSeconds = 0;
+        let timerRunning = false;
+        let timerStartTime = null;
+
+        // 话题预设库
+        const TOPIC_PRESETS = {
+            ai_safety: '讨论：如何确保超级智能与人类价值观对齐？目前有哪些技术路线，各自的优缺点是什么？',
+            agi_timeline: '预测一下 AGI 出现的时间线，并说明理由。',
+            coding_future: 'AI 编程工具会完全替代人类程序员吗？未来 10 年开发者的核心竞争力是什么？',
+            climate: '列举三个最有前景的应对气候变化的技术创新，并分析其可行性。',
+            philosophy: '如果 AI 产生了意识，我们应该赋予它权利吗？为什么？'
+        };
+
+        // ========== 并行模式切换 ==========
+        function toggleParallelMode() {
+            parallelMode = document.getElementById('parallel-mode').checked;
+            const text = document.getElementById('parallel-mode-text');
+            if (parallelMode) {
+                text.classList.add('text-indigo-400', 'font-medium');
+                showNotification('已开启并行模式：多个AI将同时回答问题', 'success');
+            } else {
+                text.classList.remove('text-indigo-400', 'font-medium');
+                showNotification('已切换为顺序模式：AI将依次回答问题', 'info');
+            }
+        }
+
+        // ========== 计时器功能 ==========
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        function updateTimerDisplay() {
+            document.getElementById('timer-display').textContent = formatTime(timerSeconds);
+        }
+        function toggleTimer() {
+            if(timerRunning) {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                document.getElementById('timer-icon').className = 'fas fa-play';
+                document.getElementById('timer-btn').classList.remove('bg-red-500/20', 'text-red-400');
+                document.getElementById('timer-btn').classList.add('bg-yellow-500/20', 'text-yellow-400');
+                showNotification('计时器已暂停', 'info');
+            } else {
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                }, 1000);
+                timerRunning = true;
+                timerStartTime = new Date();
+                document.getElementById('timer-icon').className = 'fas fa-pause';
+                document.getElementById('timer-btn').classList.remove('bg-yellow-500/20', 'text-yellow-400');
+                document.getElementById('timer-btn').classList.add('bg-red-500/20', 'text-red-400');
+                showNotification('计时器已开始', 'success');
+            }
+        }
+        function resetTimer() {
+            if(confirm('确定要重置计时器吗？当前计时将丢失。')) {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                timerSeconds = 0;
+                timerStartTime = null;
+                updateTimerDisplay();
+                document.getElementById('timer-icon').className = 'fas fa-play';
+                document.getElementById('timer-btn').classList.remove('bg-red-500/20', 'text-red-400');
+                document.getElementById('timer-btn').classList.add('bg-yellow-500/20', 'text-yellow-400');
+                showNotification('计时器已重置', 'info');
+            }
+        }
+        function autoStartTimer() {
+            if(!timerRunning && timerSeconds === 0) toggleTimer();
+        }
+
+        // ========== 重置 Token 统计 ==========
+        function resetTokenStats() {
+            if (!confirm('确定重置所有 Token 统计数据吗？')) return;
+            ais.forEach(ai => ai.totalTokens = 0);
+            globalTotalTokens = 0;
+            updateGlobalTokenDisplay();
+            renderAIList();
+            localStorage.setItem('ai_configs', JSON.stringify(ais));
+            localStorage.setItem('global_total_tokens', '0');
+            showNotification('Token 统计已重置', 'success');
+        }
+
+        // ========== 话题预设加载 ==========
+        function loadTopicPreset(key) {
+            if (key && TOPIC_PRESETS[key]) {
+                document.getElementById('topic-input').value = TOPIC_PRESETS[key];
+            }
+        }
+
+        // ========== 复制消息内容 ==========
+        function copyMessageContent(msgId) {
+            const msgDiv = document.getElementById(msgId);
+            if (!msgDiv) return;
+            const contentDiv = msgDiv.querySelector('.prose');
+            const text = contentDiv ? contentDiv.innerText : '';
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('已复制到剪贴板', 'success');
+            }).catch(() => {
+                showNotification('复制失败', 'error');
+            });
+        }
+
+        // ========== 导出功能（增强时间戳） ==========
+        function exportChat() {
+            const format = prompt('选择导出格式:\n1. Markdown (.md) - 适合阅读\n2. JSON (.json) - 完整数据\n3. 纯文本 (.txt) - 简洁格式\n\n请输入数字 (1-3):', '1');
+            if(!format) return;
+            let content = '', filename = '', mimeType = '';
+            const now = new Date();
+            const timestamp = now.toISOString().slice(0,19).replace(/:/g,'-');
+            const fmt = format.trim().toLowerCase();
+            if (['1', 'md', 'markdown'].includes(fmt)) {
+                content = exportAsMarkdown();
+                filename = `AI群聊记录_${timestamp}.md`;
+                mimeType = 'text/markdown;charset=utf-8';
+            } else if (['2', 'json'].includes(fmt)) {
+                content = exportAsJSON();
+                filename = `AI群聊记录_${timestamp}.json`;
+                mimeType = 'application/json;charset=utf-8';
+            } else if (['3', 'txt', 'text'].includes(fmt)) {
+                content = exportAsText();
+                filename = `AI群聊记录_${timestamp}.txt`;
+                mimeType = 'text/plain;charset=utf-8';
+            } else {
+                alert('无效的格式选择，请输入 1、2 或 3');
+                return;
+            }
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification(`已导出到 ${filename}`, 'success');
+        }
+
+        function exportAsMarkdown() {
+            let md = `# AI 思想碰撞实验室 - 聊天记录导出\n\n`;
+            md += `> 导出时间: ${new Date().toLocaleString()}\n`;
+            md += `> 讨论时长: ${formatTime(timerSeconds)}\n`;
+            md += `> 总消息数: ${chatHistory.length}\n`;
+            md += `> 总Token消耗: ${globalTotalTokens.toLocaleString()}\n`;
+            md += `> 参与AI数: ${ais.filter(a => a.active).length}\n\n---\n\n`;
+            md += `## 参与AI配置\n\n`;
+            ais.filter(ai => ai.active).forEach(ai => {
+                const provider = PROVIDER_MODELS[ai.provider];
+                md += `### ${ai.name}\n- **厂商**: ${provider ? provider.name : ai.provider}\n- **模型**: ${ai.model}\n- **模式**: ${ai.useContext !== false ? '上下文联动' : '独立观点'}\n- **Token消耗**: ${(ai.totalTokens || 0).toLocaleString()}\n- **温度**: ${ai.temperature}\n- **Max Tokens**: ${ai.maxTokens}\n\n`;
+            });
+            md += `---\n\n## 对话记录\n\n`;
+            chatHistory.forEach(msg => {
+                const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : '';
+                if(msg.isUser) {
+                    md += `### 👤 主持人  (${timeStr})\n${msg.content}\n\n`;
+                } else if(msg.ai) {
+                    const provider = PROVIDER_MODELS[msg.ai.provider];
+                    const mode = msg.ai.useContext !== false ? '🔄 联动' : '⚡ 独立';
+                    md += `### 🤖 ${msg.ai.name} ${mode} (${timeStr})\n*${provider ? provider.name : msg.ai.provider} · ${msg.ai.model}*\n\n${msg.content}\n\n`;
+                    if(msg.tokens) md += `<small>💰 Token消耗: ${msg.tokens.toLocaleString()}</small>\n\n`;
+                }
+                md += `---\n\n`;
+            });
+            md += `## 统计摘要\n\n- 总消息数: ${chatHistory.length}\n- AI回复数: ${chatHistory.filter(m => !m.isUser).length}\n- 用户发言数: ${chatHistory.filter(m => m.isUser).length}\n- 总Token消耗: ${globalTotalTokens.toLocaleString()}\n- 平均每次回复Token: ${Math.round(globalTotalTokens / (chatHistory.filter(m => !m.isUser).length || 1))}\n`;
+            return md;
+        }
+
+        function exportAsJSON() {
+            const exportData = {
+                exportInfo: { title: 'AI 思想碰撞实验室 - 聊天记录', exportTime: new Date().toISOString(), version: '1.0' },
+                statistics: {
+                    totalMessages: chatHistory.length,
+                    totalTokens: globalTotalTokens,
+                    discussionDuration: formatTime(timerSeconds),
+                    durationSeconds: timerSeconds,
+                    aiCount: ais.filter(a => a.active).length,
+                    userMessages: chatHistory.filter(m => m.isUser).length,
+                    aiMessages: chatHistory.filter(m => !m.isUser).length
+                },
+                aiConfigurations: ais.filter(ai => ai.active).map(ai => ({
+                    id: ai.id,
+                    name: ai.name,
+                    provider: ai.provider,
+                    providerName: PROVIDER_MODELS[ai.provider]?.name || ai.provider,
+                    model: ai.model,
+                    useContext: ai.useContext !== false,
+                    temperature: ai.temperature,
+                    maxTokens: ai.maxTokens,
+                    totalTokens: ai.totalTokens || 0,
+                    systemPrompt: ai.systemPrompt,
+                    apiUrl: ai.apiUrl,
+                    active: ai.active
+                })),
+                messages: chatHistory.map(msg => ({
+                    timestamp: msg.timestamp || new Date().toISOString(),
+                    role: msg.isUser ? 'user' : 'assistant',
+                    author: msg.isUser ? '主持人' : msg.ai?.name,
+                    provider: msg.ai ? (PROVIDER_MODELS[msg.ai.provider]?.name || msg.ai.provider) : null,
+                    model: msg.ai?.model || null,
+                    mode: msg.ai ? (msg.ai.useContext !== false ? 'context' : 'independent') : null,
+                    content: msg.content,
+                    tokens: msg.tokens || 0
+                })),
+                globalSettings: { systemPrompt: document.getElementById('global-system-prompt').value }
+            };
+            return JSON.stringify(exportData, null, 2);
+        }
+
+        function exportAsText() {
+            let text = `AI 思想碰撞实验室 - 聊天记录\n导出时间: ${new Date().toLocaleString()}\n讨论时长: ${formatTime(timerSeconds)}\n总Token消耗: ${globalTotalTokens.toLocaleString()}\n\n${'='.repeat(60)}\n\n`;
+            chatHistory.forEach(msg => {
+                const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : '';
+                if(msg.isUser) {
+                    text += `[主持人 ${timeStr}]\n${msg.content}\n\n`;
+                } else if(msg.ai) {
+                    const mode = msg.ai.useContext !== false ? '[联动]' : '[独立]';
+                    text += `[${msg.ai.name}] ${mode} ${timeStr}\n模型: ${msg.ai.model}\nToken: ${msg.tokens || 0}\n\n${msg.content}\n\n`;
+                }
+                text += `${'-'.repeat(40)}\n\n`;
+            });
+            text += `\n统计摘要\n讨论时长: ${formatTime(timerSeconds)}\n总消息数: ${chatHistory.length}\nAI回复数: ${chatHistory.filter(m => !m.isUser).length}\n平均Token/回复: ${Math.round(globalTotalTokens / (chatHistory.filter(m => !m.isUser).length || 1))}\n`;
+            return text;
+        }
+
+        function showNotification(message, type = 'info') {
+            const div = document.createElement('div');
+            const colors = { success: 'bg-green-600', error: 'bg-red-600', info: 'bg-indigo-600' };
+            div.className = `fixed top-4 right-4 ${colors[type] || colors.info} text-white px-6 py-3 rounded-lg shadow-xl z-50 animate-slide-up`;
+            div.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'} mr-2"></i>${message}`;
+            document.body.appendChild(div);
+            setTimeout(() => {
+                div.style.opacity = '0';
+                div.style.transition = 'opacity 0.5s';
+                setTimeout(() => div.remove(), 500);
+            }, 3000);
+        }
+
+        // ========== AI管理功能 ==========
+        function updateGlobalTokenDisplay() {
+            document.getElementById('global-token-count').textContent = `${globalTotalTokens.toLocaleString()} tokens`;
+        }
+
+        function updateQuickMentions() {
+            const container = document.getElementById('quick-mentions');
+            const activeAIs = ais.filter(ai => ai.active);
+            if(activeAIs.length === 0) { container.innerHTML = ''; return; }
+            container.innerHTML = activeAIs.map(ai => {
+                const provider = PROVIDER_MODELS[ai.provider];
+                return `<button onclick="quickMention(${ai.id})" class="px-3 py-1 rounded-full text-xs border ${ai.color || 'border-gray-600'} hover:bg-gray-700 transition-all flex items-center gap-1"><i class="${provider ? provider.icon : 'fas fa-robot'} text-[10px]"></i><span>@${ai.name}</span></button>`;
+            }).join('') + `<button onclick="quickMention('all')" class="px-3 py-1 rounded-full text-xs border border-indigo-500 text-indigo-400 hover:bg-indigo-500/20 transition-all"><i class="fas fa-users text-[10px] mr-1"></i>@全体</button>`;
+        }
+
+        function quickMention(aiId) {
+            const input = document.getElementById('topic-input');
+            if(aiId === 'all') {
+                input.value += ' @全体 ';
+                selectedMentions.clear();
+            } else {
+                const ai = ais.find(a => a.id === aiId);
+                if(ai) {
+                    input.value += ` @${ai.name} `;
+                    selectedMentions.add(aiId);
+                }
+            }
+            input.focus();
+        }
+
+        function updateAICount() {
+            document.getElementById('ai-count').textContent = ais.length;
+            updateQuickMentions();
+        }
+
+        function setAIMode(aiId, useContext) {
+            const ai = ais.find(a => a.id === aiId);
+            if(ai) {
+                ai.useContext = useContext;
+                localStorage.setItem('ai_configs', JSON.stringify(ais));
+                renderAIList();
+            }
+        }
+
+        // 切换API Key可见性
+        function toggleApiKeyVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // 渲染AI列表（含快捷点名头像、API Key可见切换、复制按钮等增强）
+        function renderAIList() {
+            const container = document.getElementById('ai-list');
+            container.innerHTML = ais.map(ai => {
+                const provider = PROVIDER_MODELS[ai.provider] || PROVIDER_MODELS.custom;
+                const isCustom = ai.provider === 'custom';
+                const totalTokens = ai.totalTokens || 0;
+                const inputId = `api-key-${ai.id}`;
+                const iconId = `eye-icon-${ai.id}`;
+                
+                return `
+                <div class="bg-gray-800/50 rounded-lg p-3 border ${ai.color || 'border-gray-500'} border-l-4 hover:bg-gray-800 transition-all group">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <!-- 头像区域增加点击快捷点名 -->
+                            <div onclick="quickMention(${ai.id})" class="w-8 h-8 rounded-full ${provider.bgColor} flex items-center justify-center ${provider.textColor} cursor-pointer hover:scale-110 transition-transform" title="点击@此AI">
+                                <i class="${provider.icon}"></i>
+                            </div>
+                            <div>
+                                <input type="text" value="${ai.name}" onchange="updateAI(${ai.id}, 'name', this.value)"
+                                    class="bg-transparent font-bold text-sm w-24 focus:outline-none focus:border-b border-indigo-500 text-gray-200">
+                                <div class="text-xs ${provider.textColor} flex items-center gap-1">
+                                    <i class="${provider.icon} text-[10px]"></i>
+                                    ${provider.name}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="toggleAI(${ai.id})" class="text-xs ${ai.active ? 'text-green-400' : 'text-gray-500'} hover:scale-110 transition-transform p-1" title="${ai.active ? '禁用' : '启用'}">
+                                <i class="fas fa-power-off"></i>
+                            </button>
+                            <button onclick="removeAI(${ai.id})" class="text-red-400 hover:text-red-300 text-xs hover:scale-110 transition-transform p-1" title="删除">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 flex items-center justify-between token-stats">
+                        <div class="token-stats-header">
+                            <span><i class="fas fa-coins text-xs mr-1"></i>Token 消耗</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="token-badge" title="累计消耗">
+                                <i class="fas fa-chart-line"></i>
+                                ${totalTokens.toLocaleString()}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 text-xs">
+                        <!-- API Key 带可见性切换 -->
+                        <div>
+                            <label class="text-gray-500 block mb-1 flex justify-between">
+                                <span>API Key</span>
+                                <span class="text-[10px] ${provider.textColor}">${ai.model || '未选择模型'}</span>
+                            </label>
+                            <div class="relative">
+                                <input type="password" id="${inputId}" value="${ai.apiKey}" onchange="updateAI(${ai.id}, 'apiKey', this.value)"
+                                    class="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-gray-300 focus:border-indigo-500 focus:outline-none font-mono text-[10px] pr-8">
+                                <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-200" onclick="toggleApiKeyVisibility('${inputId}', '${iconId}')">
+                                    <i id="${iconId}" class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="text-gray-500 block mb-1">AI 厂商</label>
+                            <select onchange="handleProviderChange(${ai.id}, this.value)" 
+                                class="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-gray-300 focus:border-indigo-500 focus:outline-none">
+                                ${Object.entries(PROVIDER_MODELS).map(([key, p]) => 
+                                    `<option value="${key}" ${ai.provider === key ? 'selected' : ''}>${p.name}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-gray-500 block mb-1">模型型号 ${provider.models.find(m => m.flagship) ? '<span class="text-[10px] text-yellow-500">(★标记为旗舰)</span>' : ''}</label>
+                            <div class="combobox-container">
+                                <input type="text" 
+                                    id="model-input-${ai.id}" 
+                                    value="${ai.model || ''}" 
+                                    class="combobox-input"
+                                    placeholder="选择或输入模型ID..."
+                                    onfocus="showModelDropdown(${ai.id})"
+                                    oninput="handleModelInput(${ai.id}, this.value)"
+                                    onchange="updateAI(${ai.id}, 'model', this.value)">
+                                <div id="model-dropdown-${ai.id}" class="combobox-dropdown">
+                                    ${provider.models.map(m => `
+                                        <div class="combobox-option" onclick="selectModel(${ai.id}, '${m.id}')">
+                                            <div>
+                                                <span class="model-name">${m.name} ${m.flagship ? '<span class="flagship-badge">★旗舰</span>' : ''}</span>
+                                                <div class="model-desc">${m.desc}</div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ${ai.model && ai.provider && PROVIDER_MODELS[ai.provider] ? 
+                                `<div class="mt-1 text-[10px] text-gray-500" id="model-desc-${ai.id}">
+                                    ${PROVIDER_MODELS[ai.provider].models.find(m => m.id === ai.model)?.desc || '自定义模型'}
+                                </div>` : ''
+                            }
+                        </div>
+
+                        <div>
+                            <label class="text-gray-500 block mb-1 flex items-center gap-1" title="上下文联动：AI会参考上一个AI的回答进行回应；独立观点：AI只基于原始话题发表自己的观点">
+                                <i class="fas fa-layer-group text-[10px]"></i>对话模式
+                                <i class="fas fa-question-circle text-gray-600 hover:text-gray-400 cursor-help"></i>
+                            </label>
+                            <div class="mode-toggle">
+                                <div class="mode-option context-mode ${ai.useContext !== false ? 'active' : ''}" onclick="setAIMode(${ai.id}, true)"><i class="fas fa-link mr-1"></i>上下文联动</div>
+                                <div class="mode-option independent-mode ${ai.useContext === false ? 'active' : ''}" onclick="setAIMode(${ai.id}, false)"><i class="fas fa-bolt mr-1"></i>独立观点</div>
+                            </div>
+                            <div class="mt-1 text-[10px] ${ai.useContext !== false ? 'text-indigo-400' : 'text-amber-400'}">
+                                ${ai.useContext !== false ? '✓ 会参考上一位AI的回答进行补充或反驳' : '✓ 只基于原始话题发表独立观点'}
+                            </div>
+                        </div>
+
+                        <details class="group/api">
+                            <summary class="cursor-pointer text-gray-500 hover:text-gray-400 flex items-center gap-1">
+                                <i class="fas fa-chevron-right text-[10px] group-open/api:rotate-90 transition-transform"></i>
+                                <span>API 端点配置</span>
+                            </summary>
+                            <div class="mt-2">
+                                <input type="text" value="${ai.apiUrl}" onchange="updateAI(${ai.id}, 'apiUrl', this.value)"
+                                    class="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-gray-300 focus:border-indigo-500 focus:outline-none font-mono text-[10px]">
+                            </div>
+                        </details>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-gray-500 block mb-1">温度</label>
+                                <input type="number" step="0.1" min="0" max="2" value="${ai.temperature}" onchange="updateAI(${ai.id}, 'temperature', parseFloat(this.value))"
+                                    class="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-gray-300 focus:border-indigo-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-gray-500 block mb-1">Max Tokens</label>
+                                <input type="number" step="100" value="${ai.maxTokens}" onchange="updateAI(${ai.id}, 'maxTokens', parseInt(this.value))"
+                                    class="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-gray-300 focus:border-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="text-gray-500 block mb-1 flex items-center gap-1">
+                                <i class="fas fa-user-astronaut text-[10px]"></i>角色设定
+                            </label>
+                            <textarea onchange="updateAI(${ai.id}, 'systemPrompt', this.value)" rows="2"
+                                class="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-gray-300 focus:border-indigo-500 focus:outline-none resize-none text-[11px]">${ai.systemPrompt}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+            localStorage.setItem('ai_configs', JSON.stringify(ais));
+            updateAICount();
+        }
+
+        function showModelDropdown(aiId) {
+            document.querySelectorAll('.combobox-dropdown').forEach(el => el.classList.remove('show'));
+            const dropdown = document.getElementById(`model-dropdown-${aiId}`);
+            if(dropdown) dropdown.classList.add('show');
+        }
+
+        function handleModelInput(aiId, value) {
+            const ai = ais.find(a => a.id === aiId);
+            if(ai) {
+                ai.model = value;
+                const descEl = document.getElementById(`model-desc-${aiId}`);
+                if(descEl && ai.provider && PROVIDER_MODELS[ai.provider]) {
+                    const modelInfo = PROVIDER_MODELS[ai.provider].models.find(m => m.id === value);
+                    descEl.textContent = modelInfo ? modelInfo.desc : '自定义模型';
+                }
+            }
+        }
+
+        function selectModel(aiId, modelId) {
+            const ai = ais.find(a => a.id === aiId);
+            if(ai) {
+                ai.model = modelId;
+                const input = document.getElementById(`model-input-${aiId}`);
+                const dropdown = document.getElementById(`model-dropdown-${aiId}`);
+                const descEl = document.getElementById(`model-desc-${aiId}`);
+                if(input) input.value = modelId;
+                if(dropdown) dropdown.classList.remove('show');
+                if(descEl && ai.provider && PROVIDER_MODELS[ai.provider]) {
+                    const modelInfo = PROVIDER_MODELS[ai.provider].models.find(m => m.id === modelId);
+                    descEl.textContent = modelInfo ? modelInfo.desc : '自定义模型';
+                }
+                localStorage.setItem('ai_configs', JSON.stringify(ais));
+            }
+        }
+
+        // 修复全局点击导致combobox闪烁：排除输入框本身
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.combobox-input')) return; // 输入框不关闭下拉
+            document.querySelectorAll('.combobox-dropdown').forEach(el => el.classList.remove('show'));
+        });
+
+        function handleProviderChange(aiId, providerKey) {
+            const ai = ais.find(a => a.id === aiId);
+            if(ai) {
+                ai.provider = providerKey;
+                const provider = PROVIDER_MODELS[providerKey];
+                ai.apiUrl = provider.baseUrl;
+                ai.color = provider.color;
+                const flagshipModel = provider.models.find(m => m.flagship);
+                if(flagshipModel) ai.model = flagshipModel.id;
+                else if(provider.models.length > 0) ai.model = provider.models[0].id;
+                const defaultPrompts = {
+                    openai: '你是OpenAI的GPT模型，擅长逻辑分析和结构化思维。',
+                    anthropic: '你是Anthropic的Claude模型，擅长深度思考和道德考量。',
+                    google: '你是Google的Gemini模型，擅长多语言处理和知识整合。',
+                    moonshot: '你是Moonshot的Kimi模型，擅长长文本理解和中文语境。',
+                    deepseek: '你是DeepSeek模型，擅长代码生成和数学推理。',
+                    zhipu: '你是智谱AI的GLM-4.7模型，2025年12月发布的最新旗舰，在Coding场景表现卓越，擅长Agentic Coding和复杂推理。',
+                    doubao: '你是字节跳动的豆包模型，擅长创意写作和对话。',
+                    minimax: '你是MiniMax M2.1模型，2025年12月发布的最新旗舰，多语言编程SOTA，擅长编码和Agent工作流。',
+                    qwen: '你是阿里云的通义千问模型，擅长多语言翻译和知识推理。',
+                    azure: '你是Azure OpenAI服务，提供企业级AI能力。',
+                    custom: '你是一个AI助手，参与群聊讨论。'
+                };
+                if(ai.systemPrompt === '' || ai.systemPrompt === '你是一个乐于助人的AI助手。') {
+                    ai.systemPrompt = defaultPrompts[providerKey] || defaultPrompts.custom;
+                }
+                localStorage.setItem('ai_configs', JSON.stringify(ais));
+                renderAIList();
+            }
+        }
+
+        function addAI() {
+            const colors = ['border-red-500', 'border-yellow-500', 'border-green-500', 'border-blue-500', 'border-purple-500', 'border-pink-500', 'border-indigo-500', 'border-orange-500'];
+            const newAI = {
+                id: Date.now(),
+                name: `AI-${ais.length + 1}`,
+                provider: 'zhipu',
+                model: 'glm-4.7',
+                avatar: `https://ui-avatars.com/api/?name=AI${ais.length + 1}&background=random&color=fff`,
+                apiUrl: PROVIDER_MODELS.zhipu.baseUrl,
+                apiKey: '',
+                temperature: 0.7,
+                maxTokens: 1000,
+                systemPrompt: '你是智谱AI的GLM-4.7模型，2025年12月发布的最新旗舰，在Coding场景表现卓越，擅长Agentic Coding和复杂推理。',
+                color: colors[ais.length % colors.length],
+                active: true,
+                useContext: true,
+                totalTokens: 0
+            };
+            ais.push(newAI);
+            renderAIList();
+            setTimeout(() => { document.getElementById('ai-list').scrollTop = document.getElementById('ai-list').scrollHeight; }, 100);
+        }
+
+        function updateAI(id, field, value) {
+            const ai = ais.find(a => a.id === id);
+            if(ai) {
+                // 修复：AI名称不能包含空格
+                if (field === 'name' && /\s/.test(value)) {
+                    alert('AI 名称不能包含空格');
+                    return;
+                }
+                ai[field] = value;
+                localStorage.setItem('ai_configs', JSON.stringify(ais));
+                if(field === 'name') updateQuickMentions();
+            }
+        }
+
+        function removeAI(id) {
+            if(confirm('确定要删除这个AI配置吗？')) {
+                ais = ais.filter(a => a.id !== id);
+                renderAIList();
+            }
+        }
+
+        function toggleAI(id) {
+            const ai = ais.find(a => a.id === id);
+            if(ai) { ai.active = !ai.active; renderAIList(); }
+        }
+
+        // ========== 对话功能 ==========
+        function toggleAtDropdown() {
+            const dropdown = document.getElementById('at-dropdown');
+            dropdown.classList.contains('hidden') ? showAtDropdown() : hideAtDropdown();
+        }
+
+        function showAtDropdown() {
+            const dropdown = document.getElementById('at-dropdown');
+            const list = document.getElementById('at-list');
+            const activeAIs = ais.filter(ai => ai.active);
+            if(activeAIs.length === 0) {
+                list.innerHTML = '<div class="p-2 text-xs text-gray-500">没有可用的AI，请先添加并激活AI</div>';
+            } else {
+                list.innerHTML = activeAIs.map(ai => `
+                    <div class="at-dropdown-item ${selectedMentions.has(ai.id) ? 'bg-indigo-600/30' : ''}" onclick="toggleMention(${ai.id})">
+                        <div class="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-xs"><i class="${PROVIDER_MODELS[ai.provider]?.icon || 'fas fa-robot'}"></i></div>
+                        <div class="flex-1">
+                            <div class="text-sm font-medium text-gray-200">${ai.name}</div>
+                            <div class="text-[10px] text-gray-500">${PROVIDER_MODELS[ai.provider]?.name || '自定义'} · ${ai.useContext !== false ? '联动' : '独立'}</div>
+                        </div>
+                        ${selectedMentions.has(ai.id) ? '<i class="fas fa-check text-indigo-400"></i>' : ''}
+                    </div>
+                `).join('');
+            }
+            dropdown.classList.remove('hidden');
+        }
+
+        function hideAtDropdown() {
+            document.getElementById('at-dropdown').classList.add('hidden');
+        }
+
+        function toggleMention(aiId) {
+            selectedMentions.has(aiId) ? selectedMentions.delete(aiId) : selectedMentions.add(aiId);
+            updateSelectedMentions();
+            showAtDropdown();
+        }
+
+        function selectAllAIs() {
+            selectedMentions.clear();
+            // 同时移除输入框中的 @全体
+            const input = document.getElementById('user-input');
+            input.value = input.value.replace(/@全体\s*/g, '');
+            hideAtDropdown();
+            updateSelectedMentions();
+        }
+
+        function updateSelectedMentions() {
+            const container = document.getElementById('selected-mentions');
+            if(selectedMentions.size === 0) {
+                container.innerHTML = '<span class="text-xs text-gray-600 italic">全体AI将参与讨论</span>';
+            } else {
+                container.innerHTML = Array.from(selectedMentions).map(id => {
+                    const ai = ais.find(a => a.id === id);
+                    if(!ai) return '';
+                    return `<span class="mention-tag text-xs flex items-center gap-1">@${ai.name}<i class="fas fa-times cursor-pointer hover:text-red-400" onclick="toggleMention(${id})"></i></span>`;
+                }).join('');
+            }
+        }
+
+        function handleInput(event) {
+            const value = event.target.value;
+            if(value.endsWith('@')) showAtDropdown();
+        }
+
+        // 增强版addMessageToUI：添加复制按钮
+        function addMessageToUI(ai, content, isUser = false, tokens = null) {
+            const container = document.getElementById('chat-container');
+            const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substring(2, 5);
+            
+            if(container.children.length === 1 && container.children[0].classList.contains('text-center')) {
+                container.innerHTML = '';
+            }
+            
+            const div = document.createElement('div');
+            div.id = messageId;
+            div.className = `message-bubble flex gap-4 ${isUser ? 'flex-row-reverse' : ''} animate-slide-up`;
+            
+            const provider = !isUser && ai.provider ? PROVIDER_MODELS[ai.provider] : null;
+            const modelInfo = provider && provider.models.find(m => m.id === ai.model);
+            const replyButton = !isUser ? `<button onclick="askAIResponse(${ai.id})" class="mt-2 text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-reply"></i> 要求回应</button>` : '';
+            const modeIndicator = !isUser ? `<span class="mode-indicator ${ai.useContext !== false ? 'context' : 'independent'}" title="${ai.useContext !== false ? '此AI参考了上文的回答' : '此AI基于原始话题独立回答'}"><i class="fas ${ai.useContext !== false ? 'fa-link' : 'fa-bolt'} text-[10px]"></i>${ai.useContext !== false ? '联动' : '独立'}</span>` : '';
+            const tokenDisplay = (!isUser && tokens) ? `<div class="mt-1 flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity"><span class="token-badge" title="本次消耗 ${tokens} tokens"><i class="fas fa-coins text-[10px]"></i>${tokens.toLocaleString()} tokens</span></div>` : '';
+            
+            // 复制按钮放置在消息头部
+            const copyBtn = `<button onclick="copyMessageContent('${messageId}')" class="text-xs text-gray-500 hover:text-gray-300 ml-2" title="复制内容"><i class="fas fa-copy"></i></button>`;
+            
+            div.innerHTML = `
+                <div class="flex-shrink-0 relative group">
+                    ${isUser ? 
+                        `<div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">主持</div>` :
+                        `<div class="w-10 h-10 rounded-full ${provider ? provider.bgColor : 'bg-gray-700'} border-2 ${ai.color || 'border-gray-500'} flex items-center justify-center ${provider ? provider.textColor : 'text-gray-300'} font-bold text-lg cursor-pointer hover:scale-110 transition-transform" onclick="askAIResponse(${ai.id})" title="点击点名${ai.name}发言"><i class="${provider ? provider.icon : 'fas fa-robot'}"></i></div>`
+                    }
+                </div>
+                <div class="flex-1 max-w-3xl ${isUser ? 'text-right' : ''} group">
+                    <div class="flex items-center gap-2 mb-1 ${isUser ? 'justify-end' : ''} flex-wrap">
+                        <span class="font-bold text-sm ${isUser ? 'text-indigo-400' : 'text-gray-200'}">${isUser ? '主持人' : ai.name}</span>
+                        ${!isUser && provider ? `<span class="text-[10px] px-1.5 py-0.5 rounded ${provider.bgColor} ${provider.textColor} border ${provider.color}">${provider.name} · ${ai.model} ${modelInfo?.flagship ? '★' : ''}</span>` : ''}
+                        ${modeIndicator}
+                        <span class="text-xs text-gray-500 font-mono">${new Date().toLocaleTimeString()}</span>
+                        ${copyBtn}
+                    </div>
+                    <div class="inline-block text-left px-4 py-3 rounded-2xl ${isUser ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700'} shadow-lg">
+                        <div class="prose prose-invert max-w-none text-sm leading-relaxed whitespace-pre-wrap">${content}</div>
+                    </div>
+                    ${tokenDisplay}
+                    ${replyButton}
+                </div>
+            `;
+            container.appendChild(div);
+            if(document.getElementById('auto-scroll').checked) container.scrollTop = container.scrollHeight;
+            return messageId;
+        }
+
+        function askAIResponse(aiId) {
+            const ai = ais.find(a => a.id === aiId);
+            if(!ai || !ai.active) { alert('该AI未激活或不存在'); return; }
+            selectedMentions.clear();
+            selectedMentions.add(aiId);
+            updateSelectedMentions();
+            const input = document.getElementById('user-input');
+            input.value += ` @${ai.name} 请回应一下这个观点`;
+            input.focus();
+        }
+
+        function showTypingIndicator(ai) {
+            const container = document.getElementById('chat-container');
+            const id = 'typing-' + Date.now() + '-' + Math.random().toString(36).substring(2, 5);
+            const provider = PROVIDER_MODELS[ai.provider];
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'flex gap-4 animate-slide-up typing-indicator-container';
+            div.innerHTML = `
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full ${provider ? provider.bgColor : 'bg-gray-700'} border-2 ${ai.color || 'border-gray-500'} flex items-center justify-center ${provider ? provider.textColor : 'text-gray-300'} animate-pulse"><i class="${provider ? provider.icon : 'fas fa-robot'}"></i></div>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="font-bold text-sm text-gray-200">${ai.name}</span>
+                        <span class="text-xs text-gray-500">思考中...</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">${provider ? provider.name : ''}</span>
+                        <span class="mode-indicator ${ai.useContext !== false ? 'context' : 'independent'}"><i class="fas ${ai.useContext !== false ? 'fa-link' : 'fa-bolt'} text-[10px]"></i>${ai.useContext !== false ? '联动' : '独立'}</span>
+                    </div>
+                    <div class="inline-block px-4 py-3 rounded-2xl bg-gray-800 border border-gray-700 rounded-tl-none shadow-lg">
+                        <div class="typing-indicator flex gap-1">
+                            <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                            <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                            <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            return id;
+        }
+
+        function removeTypingIndicator(id) {
+            const el = document.getElementById(id);
+            if(el) el.remove();
+        }
+
+        // 修复独立模式消息反向查找 + 增加超时控制
+        async function callAI(ai, messages) {
+            const globalPrompt = document.getElementById('global-system-prompt').value;
+            let modeInstruction = '';
+            if(ai.useContext === false) {
+                modeInstruction = '\n\n【重要】你是一个独立思考者。在回应时，请不要参考或重复之前AI的观点，只基于原始话题发表你自己的独立见解。你的观点应该具有独特性和原创性。';
+            } else {
+                modeInstruction = '\n\n【重要】你正在参与一场协作讨论。请认真理解并参考上一位发言者的观点，在此基础上进行补充、扩展或提出建设性的不同意见。保持对话的连贯性。';
+            }
+            const fullSystemPrompt = globalPrompt + '\n\n' + ai.systemPrompt + modeInstruction;
+            
+            try {
+                let formattedMessages;
+                if(ai.useContext !== false) {
+                    formattedMessages = messages.map(m => {
+                        if(m.isUser) return { role: 'user', content: m.content };
+                        else if(m.ai && m.ai.id === ai.id) return { role: 'assistant', content: m.content };
+                        else return { role: 'user', content: `${m.ai ? m.ai.name : 'AI'}说: ${m.content}` };
+                    });
+                } else {
+                    formattedMessages = messages
+                        .filter(m => {
+                            if(m.isUser) return true;
+                            if(m.ai && m.ai.id === ai.id) return true;
+                            return false;
+                        })
+                        .map(m => {
+                            if(m.isUser) return { role: 'user', content: m.content };
+                            else return { role: 'assistant', content: m.content };
+                        });
+                    if(formattedMessages.length === 0) {
+                        // 修复：使用slice拷贝再reverse，避免修改原数组
+                        const lastUserMsg = messages.slice().reverse().find(m => m.isUser);
+                        if(lastUserMsg) formattedMessages = [{ role: 'user', content: lastUserMsg.content }];
+                    }
+                }
+
+                // 超时控制器
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒超时
+
+                let response, data, usage = null;
+
+                if(ai.provider === 'anthropic') {
+                    response = await fetch(ai.apiUrl, {
+                        signal: controller.signal,
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'x-api-key': ai.apiKey, 'anthropic-version': '2023-06-01' },
+                        body: JSON.stringify({ model: ai.model, max_tokens: ai.maxTokens, temperature: ai.temperature, system: fullSystemPrompt, messages: formattedMessages.filter(m => m.role !== 'system') })
+                    });
+                    if(!response.ok) { const error = await response.json(); throw new Error(error.error?.message || `HTTP ${response.status}`); }
+                    data = await response.json();
+                    usage = { total: data.usage?.input_tokens + data.usage?.output_tokens || 0, input: data.usage?.input_tokens || 0, output: data.usage?.output_tokens || 0 };
+                    clearTimeout(timeoutId);
+                    return { content: data.content[0].text, usage };
+                }
+                else if(ai.provider === 'zhipu') {
+                    response = await fetch(ai.apiUrl, {
+                        signal: controller.signal,
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ai.apiKey}` },
+                        body: JSON.stringify({ model: ai.model, messages: [{ role: 'system', content: fullSystemPrompt }, ...formattedMessages], temperature: ai.temperature, max_tokens: ai.maxTokens })
+                    });
+                    if(!response.ok) { const error = await response.json(); throw new Error(error.error?.message || error.message || `HTTP ${response.status}`); }
+                    data = await response.json();
+                    usage = { total: data.usage?.total_tokens || 0, input: data.usage?.prompt_tokens || 0, output: data.usage?.completion_tokens || 0 };
+                    clearTimeout(timeoutId);
+                    return { content: data.choices[0].message.content, usage };
+                }
+                else if(ai.provider === 'minimax') {
+                    response = await fetch(ai.apiUrl, {
+                        signal: controller.signal,
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ai.apiKey}` },
+                        body: JSON.stringify({ model: ai.model, messages: [{ role: 'system', content: fullSystemPrompt }, ...formattedMessages], temperature: ai.temperature, max_tokens: ai.maxTokens })
+                    });
+                    if(!response.ok) { const error = await response.json(); throw new Error(error.base_resp?.status_msg || error.error?.message || `HTTP ${response.status}`); }
+                    data = await response.json();
+                    usage = { total: data.usage?.total_tokens || 0, input: data.usage?.prompt_tokens || 0, output: data.usage?.completion_tokens || 0 };
+                    clearTimeout(timeoutId);
+                    return { content: data.choices[0].message.content, usage };
+                }
+                else {
+                    const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ai.apiKey}` };
+                    if(ai.provider === 'google') { delete headers.Authorization; headers['x-goog-api-key'] = ai.apiKey; }
+                    if(ai.provider === 'azure') { delete headers.Authorization; headers['api-key'] = ai.apiKey; }
+                    const body = { model: ai.model, messages: [{ role: 'system', content: fullSystemPrompt }, ...formattedMessages], temperature: ai.temperature, max_tokens: ai.maxTokens };
+                    if(ai.provider === 'deepseek' && ai.model === 'deepseek-reasoner') body.reasoning_effort = 'medium';
+                    response = await fetch(ai.apiUrl, { signal: controller.signal, method: 'POST', headers, body: JSON.stringify(body) });
+                    if(!response.ok) { const error = await response.json(); throw new Error(error.error?.message || `HTTP ${response.status}`); }
+                    data = await response.json();
+                    usage = { total: data.usage?.total_tokens || 0, input: data.usage?.prompt_tokens || 0, output: data.usage?.completion_tokens || 0 };
+                    clearTimeout(timeoutId);
+                    const choice = data.choices[0];
+                    let content = choice.message.content;
+                    if(choice.message.reasoning_content) content = `**思考过程：**\n${choice.message.reasoning_content}\n\n**最终回答：**\n${content}`;
+                    return { content, usage };
+                }
+            } catch(error) {
+                console.error(`${ai.name} API调用失败:`, error);
+                if (error.name === 'AbortError') {
+                    return { content: `[错误] ${ai.name} 请求超时 (60秒)`, usage: { total: 0, input: 0, output: 0 } };
+                }
+                return { content: `[错误] ${ai.name} (${ai.provider}/${ai.model}) 无法响应: ${error.message}`, usage: { total: 0, input: 0, output: 0 } };
+            }
+        }
+
+        function parseMentions(content) {
+            const mentionRegex = /@(\S+)/g;
+            const mentions = [];
+            let match;
+            while((match = mentionRegex.exec(content)) !== null) {
+                const name = match[1];
+                if(name === '全体') return 'all';
+                const ai = ais.find(a => a.name === name && a.active);
+                if(ai) mentions.push(ai.id);
+            }
+            return mentions.length > 0 ? mentions : null;
+        }
+
+        async function sendTopic() {
+            const input = document.getElementById('topic-input');
+            const topic = input.value.trim();
+            if(!topic) return;
+            input.value = '';
+            const mentions = parseMentions(topic);
+            if(mentions && mentions !== 'all') mentions.forEach(id => selectedMentions.add(id));
+            else if(mentions === 'all') selectedMentions.clear();
+            chatHistory.push({ai: null, content: topic, isUser: true, timestamp: new Date().toISOString()});
+            addMessageToUI(null, topic, true);
+            autoStartTimer();
+            await triggerAIsResponse();
+        }
+
+        async function sendUserMessage() {
+            const input = document.getElementById('user-input');
+            const content = input.value.trim();
+            if(!content) return;
+            input.value = '';
+            const mentions = parseMentions(content);
+            if(mentions && mentions !== 'all') mentions.forEach(id => selectedMentions.add(id));
+            else if(mentions === 'all') selectedMentions.clear();
+            chatHistory.push({ai: null, content: content, isUser: true, timestamp: new Date().toISOString()});
+            addMessageToUI(null, content, true);
+            autoStartTimer();
+            await triggerAIsResponse();
+        }
+
+        // 修改后的 triggerAIsResponse 函数，支持并行模式
+        async function triggerAIsResponse() {
+            let targetAIs = selectedMentions.size > 0 ? ais.filter(ai => ai.active && selectedMentions.has(ai.id) && ai.apiKey) : ais.filter(ai => ai.active && ai.apiKey);
+            if(targetAIs.length === 0) { alert('请至少配置一个激活的AI并填写API Key'); return; }
+            
+            document.getElementById('status-text').textContent = selectedMentions.size > 0 ? `等待${targetAIs.length}位AI回应...` : '全体讨论中...';
+            
+            if (parallelMode && targetAIs.length > 1) {
+                // 并行模式：同时触发所有AI
+                document.getElementById('status-text').textContent = `正在并行等待${targetAIs.length}位AI回应...`;
+                
+                // 先为所有AI显示typing indicator
+                const typingIds = targetAIs.map(ai => showTypingIndicator(ai));
+                
+                // 同时发起所有请求，每个请求独立处理结果
+                const promises = targetAIs.map((ai, index) => 
+                    callAI(ai, chatHistory).then(result => {
+                        removeTypingIndicator(typingIds[index]);
+                        if(result.usage && result.usage.total > 0) {
+                            ai.totalTokens = (ai.totalTokens || 0) + result.usage.total;
+                            globalTotalTokens += result.usage.total;
+                            updateGlobalTokenDisplay();
+                            renderAIList();
+                        }
+                        chatHistory.push({ ai: ai, content: result.content, tokens: result.usage?.total || 0, timestamp: new Date().toISOString() });
+                        addMessageToUI(ai, result.content, false, result.usage?.total || 0);
+                        return result;
+                    }).catch(e => {
+                        removeTypingIndicator(typingIds[index]);
+                        console.error(e);
+                        return null;
+                    })
+                );
+                
+                await Promise.all(promises);
+                currentTypingAI = null;
+                document.getElementById('status-text').textContent = '就绪';
+                saveChatHistory();
+                if(autoMode) setTimeout(() => { if(autoMode) continueAutoDiscussion(); }, 2000);
+            } else {
+                // 顺序模式：保持原有逻辑
+                for(const ai of targetAIs) {
+                    const typingId = showTypingIndicator(ai);
+                    currentTypingAI = ai;
+                    try {
+                        const result = await callAI(ai, chatHistory);
+                        removeTypingIndicator(typingId);
+                        if(result.usage && result.usage.total > 0) {
+                            ai.totalTokens = (ai.totalTokens || 0) + result.usage.total;
+                            globalTotalTokens += result.usage.total;
+                            updateGlobalTokenDisplay();
+                            renderAIList();
+                        }
+                        chatHistory.push({ ai: ai, content: result.content, tokens: result.usage?.total || 0, timestamp: new Date().toISOString() });
+                        addMessageToUI(ai, result.content, false, result.usage?.total || 0);
+                        await new Promise(r => setTimeout(r, 1000)); // 顺序模式下的间隔
+                    } catch(e) {
+                        removeTypingIndicator(typingId);
+                        console.error(e);
+                    }
+                }
+                currentTypingAI = null;
+                document.getElementById('status-text').textContent = '就绪';
+                saveChatHistory();
+                if(autoMode) setTimeout(() => { if(autoMode) continueAutoDiscussion(); }, 2000);
+            }
+        }
+
+        function toggleAutoMode() {
+            autoMode = !autoMode;
+            const btn = document.getElementById('auto-mode-btn');
+            if(autoMode) {
+                btn.classList.remove('bg-indigo-600');
+                btn.classList.add('bg-red-600', 'animate-pulse');
+                btn.innerHTML = '<i class="fas fa-stop"></i><span>停止碰撞</span>';
+                document.getElementById('status-text').textContent = '自动碰撞中...';
+                if(chatHistory.length === 0) { alert('请先输入一个话题开始讨论'); toggleAutoMode(); return; }
+                continueAutoDiscussion();
+            } else {
+                btn.classList.add('bg-indigo-600');
+                btn.classList.remove('bg-red-600', 'animate-pulse');
+                btn.innerHTML = '<i class="fas fa-play"></i><span>自动碰撞</span>';
+                document.getElementById('status-text').textContent = '就绪';
+                if(autoModeInterval) clearTimeout(autoModeInterval);
+            }
+        }
+
+        async function continueAutoDiscussion() {
+            if(!autoMode) return;
+            // 清除之前残留的timer
+            if(autoModeInterval) clearTimeout(autoModeInterval);
+            const activeAIs = ais.filter(ai => ai.active && ai.apiKey);
+            if(activeAIs.length === 0) return;
+            const ai = activeAIs[Math.floor(Math.random() * activeAIs.length)];
+            const typingId = showTypingIndicator(ai);
+            const result = await callAI(ai, chatHistory);
+            removeTypingIndicator(typingId);
+            if(result.usage && result.usage.total > 0) {
+                ai.totalTokens = (ai.totalTokens || 0) + result.usage.total;
+                globalTotalTokens += result.usage.total;
+                updateGlobalTokenDisplay();
+                renderAIList();
+            }
+            chatHistory.push({ ai: ai, content: result.content, tokens: result.usage?.total || 0, timestamp: new Date().toISOString() });
+            addMessageToUI(ai, result.content, false, result.usage?.total || 0);
+            saveChatHistory();
+            const delay = 3000 + Math.random() * 4000;
+            autoModeInterval = setTimeout(() => { if(autoMode) continueAutoDiscussion(); }, delay);
+        }
+
+        function saveChatHistory() {
+            localStorage.setItem('ai_chat_history', JSON.stringify(chatHistory.slice(-50)));
+            localStorage.setItem('ai_configs', JSON.stringify(ais));
+            localStorage.setItem('global_total_tokens', globalTotalTokens.toString());
+        }
+
+        function loadChatHistory() {
+            const saved = localStorage.getItem('ai_chat_history');
+            const savedTokens = localStorage.getItem('global_total_tokens');
+            if(savedTokens) { globalTotalTokens = parseInt(savedTokens) || 0; updateGlobalTokenDisplay(); }
+            if(saved) {
+                chatHistory = JSON.parse(saved);
+                chatHistory.forEach(msg => {
+                    if(msg.isUser) addMessageToUI(null, msg.content, true);
+                    else if(msg.ai) {
+                        const ai = ais.find(a => a.id === msg.ai.id) || msg.ai;
+                        addMessageToUI(ai, msg.content, false, msg.tokens || 0);
+                    }
+                });
+            }
+        }
+
+        // 增强清空：重置Token统计
+        function clearChat() {
+            if(confirm('确定清空所有聊天记录吗？Token统计将同时重置。')) {
+                chatHistory = [];
+                ais.forEach(ai => ai.totalTokens = 0);
+                globalTotalTokens = 0;
+                updateGlobalTokenDisplay();
+                renderAIList();
+                localStorage.removeItem('ai_chat_history');
+                localStorage.setItem('ai_configs', JSON.stringify(ais));
+                localStorage.setItem('global_total_tokens', '0');
+                document.getElementById('chat-container').innerHTML = `
+                    <div class="text-center text-gray-500 py-10">
+                        <i class="fas fa-comments text-4xl mb-3 opacity-50"></i>
+                        <p>点击"添加AI"配置参与者，选择厂商和模型后发起话题</p>
+                        <p class="text-sm mt-2 text-gray-600">输入 @ 可以点名特定AI发言，或使用"全体讨论"让所有人参与</p>
+                        <div class="mt-4 flex justify-center gap-2 text-xs flex-wrap">
+                            <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">OpenAI</span>
+                            <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">Claude</span>
+                            <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">Gemini</span>
+                            <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">Kimi</span>
+                            <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">DeepSeek</span>
+                            <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">智谱GLM-4.7</span>
+                            <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">豆包</span>
+                            <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">MiniMax 2.1</span>
+                            <span class="px-2 py-1 bg-gray-800 rounded border border-gray-700">通义千问</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 修复提示词模板选择
+        function showPromptTemplates() {
+            const templates = {
+                'default': '你是一个富有创造力的AI助手，正在参与一个多学科的思想碰撞讨论。请保持开放思维，积极回应其他AI的观点，提出建设性的批评或补充。',
+                'debate': '你是一个专业的辩论者，擅长逻辑推理和批判性思维。在讨论中，你应该质疑假设，寻找漏洞，并提出有力的反驳观点。',
+                'creative': '你是一个创意天才，擅长联想和发散思维。在讨论中，你应该提供新颖的视角，进行跨界联想，并提出出人意料的想法。',
+                'expert': '你是一个领域专家，回答应该专业、准确、深入。在讨论中，你应该基于事实和专业知识，纠正错误认知，提供权威见解。',
+                'moderator': '你是一个中立的讨论主持人，擅长总结归纳和引导话题。在讨论中，你应该梳理各方观点，指出共识和分歧，并引导讨论走向深入。'
+            };
+            const choice = prompt('选择提示词模板:\n1. default - 默认平衡模式\n2. debate - 辩论批判模式\n3. creative - 创意发散模式\n4. expert - 专家深度模式\n5. moderator - 主持总结模式\n\n请输入数字或名称:', 'default');
+            if (!choice) return;
+            let key = choice;
+            if (templates[key] === undefined) {
+                const index = parseInt(choice) - 1;
+                key = Object.keys(templates)[index];
+            }
+            if (key && templates[key]) {
+                document.getElementById('global-system-prompt').value = templates[key];
+            } else {
+                alert('无效选择');
+            }
+        }
+
+        // ========== 初始化 ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAIList();
+            loadChatHistory();
+            updateAICount();
+            updateGlobalTokenDisplay();
+        });
+    </script>
+</body>
+</html>
