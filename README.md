@@ -12,20 +12,46 @@
 
 一个**单文件HTML应用**，让你可以同时与多个AI厂商的模型进行群聊。
 
-想象一下：让GPT-4、Claude、Kimi、DeepSeek坐在同一个聊天室里讨论问题，会碰撞出什么样的火花？💥
+想象一下：让GPT、Claude、Kimi、DeepSeek等坐在同一个聊天室里讨论问题，会碰撞出什么样的火花？💥
 
 ***
 
 ## ✨ 核心功能
 
-| 功能             | 说明                       |
-| -------------- | ------------------------ |
-| 💬 **多AI群聊**   | 同时接入10+厂商，一键群发消息         |
-| @️ **点名发言**    | 输入 `@` 指定某个AI单独回应        |
-| 🧠 **双模式切换**   | 上下文联动 / 独立观点 两种模式        |
-| 📊 **Token统计** | 实时追踪每个AI的消耗              |
-| 📤 **导出记录**    | 支持 Markdown / JSON / TXT |
-| 🎨 **精美UI**    | 暗色主题 + 毛玻璃效果             |
+### 🤖 AI 管理
+
+| 功能 | 说明 |
+|------|------|
+| 💬 **多AI群聊** | 同时接入10+厂商，一键群发消息 |
+| @️ **点名发言** | 输入 `@` 指定某个AI单独回应 |
+| 🧠 **双模式切换** | 上下文联动 / 独立观点 两种模式 |
+| ⚙️ **自定义配置** | 支持温度、Max Tokens、系统提示词设置 |
+| 🔌 **API端点自定义** | 支持自定义API地址，兼容第三方代理 |
+
+### 📊 数据统计
+
+| 功能 | 说明 |
+|------|------|
+| 📊 **Token统计** | 实时追踪每个AI的消耗 |
+| 💰 **费用估算** | 显示各厂商Token使用统计 |
+| ⏱️ **讨论计时** | 自动记录讨论时长 |
+
+### 💾 数据管理
+
+| 功能 | 说明 |
+|------|------|
+| 📤 **导出记录** | 支持 Markdown / JSON / TXT 三种格式 |
+| 🗑️ **清空记录** | 一键清空聊天记录和Token统计 |
+| 💾 **本地存储** | 配置自动保存到浏览器本地 |
+
+### 🎨 界面交互
+
+| 功能 | 说明 |
+|------|------|
+| 🎨 **精美UI** | 暗色主题 + 毛玻璃效果 |
+| 📱 **响应式设计** | 适配桌面和移动设备 |
+| ⌨️ **快捷操作** | 支持@快捷键、回车发送 |
+| 👤 **头像标识** | 每个AI都有独特的头像和颜色标识 |
 
 ***
 
@@ -33,11 +59,11 @@
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/zhyace0/ai-group-chat.git
+git clone https://github.com/zhy-ocean/ai-group-chat.git
 
 # 2. 直接用浏览器打开
 cd ai-group-chat
-start AI群聊plus-max-pro-06.html
+start ai-group-chat.html
 ```
 
 或者直接把HTML文件拖到浏览器里打开即可！
@@ -60,18 +86,17 @@ start AI群聊plus-max-pro-06.html
 
 <div align="center">
 
-|                                            厂商                                            | 旗舰模型              | 特点    |
-| :--------------------------------------------------------------------------------------: | :---------------- | :---- |
-|    ![OpenAI](https://img.shields.io/badge/OpenAI-412991?logo=openai\&logoColor=white)    | GPT-4.1           | 全能型选手 |
-| ![Claude](https://img.shields.io/badge/Anthropic-D97757?logo=anthropic\&logoColor=white) | Claude 3.7 Sonnet | 编程推理强 |
-|    ![Google](https://img.shields.io/badge/Gemini-4285F4?logo=google\&logoColor=white)    | Gemini 2.0 Flash  | 速度快   |
-|   ![Moonshot](https://img.shields.io/badge/Kimi-8B5CF6?logo=moonshot\&logoColor=white)   | Kimi K2.5         | 长上下文  |
-| ![DeepSeek](https://img.shields.io/badge/DeepSeek-00A1E0?logo=deepseek\&logoColor=white) | DeepSeek R1       | 推理专用  |
-|                                           智谱AI                                           | GLM-4.7           | 国产旗舰  |
-|                                            豆包                                            | Doubao-1.5 Pro    | 字节出品  |
-|                                          MiniMax                                         | MiniMax-M2.1      | 多语言强  |
-|                                           通义千问                                           | Qwen Max          | 阿里出品  |
-|                                           Azure                                          | GPT-4             | 企业级   |
+|                                            厂商                                            | 特点    |
+| :--------------------------------------------------------------------------------------: | :---- |
+|    ![OpenAI](https://img.shields.io/badge/OpenAI-412991?logo=openai\&logoColor=white)    | 全能型选手 |
+| ![Claude](https://img.shields.io/badge/Anthropic-D97757?logo=anthropic\&logoColor=white) | 编程推理强 |
+|    ![Google](https://img.shields.io/badge/Gemini-4285F4?logo=google\&logoColor=white)    | 速度快   |
+|   ![Moonshot](https://img.shields.io/badge/Kimi-8B5CF6?logo=moonshot\&logoColor=white)   | 长上下文  |
+| ![DeepSeek](https://img.shields.io/badge/DeepSeek-00A1E0?logo=deepseek\&logoColor=white) | 推理专用  |
+|                                           智谱AI                                           | 国产旗舰  |
+|                                            豆包                                            | 字节出品  |
+|                                          MiniMax                                         | 多语言强  |
+|                                           通义千问                                           | 阿里出品  |
 
 </div>
 
@@ -83,18 +108,67 @@ start AI群聊plus-max-pro-06.html
 
 在输入框输入 `@` 会弹出AI列表，选择后只有该AI会回应。
 
+**使用场景：**
+- 想让特定AI补充观点
+- 对比不同AI对同一问题的回答
+- 控制讨论节奏，避免所有AI同时回复
+
 ### 🔄 模式切换
 
-- **上下文联动**：AI能看到之前的对话，适合深度讨论
-- **独立观点**：AI只回答当前问题，适合收集不同观点
+| 模式 | 适用场景 | 说明 |
+|------|---------|------|
+| **上下文联动** | 深度讨论、头脑风暴 | AI能看到完整对话历史，回答更有连贯性 |
+| **独立观点** | 收集不同看法、对比测试 | AI只根据当前问题回答，观点更独立 |
+
+### ⚙️ 参数调优
+
+**温度 (Temperature)**
+- `0.0-0.3`：更确定、更保守的回答
+- `0.4-0.7`：平衡创造性和准确性（推荐）
+- `0.8-1.0`：更有创意、更多样化的回答
+
+**Max Tokens**
+- 控制AI回复的最大长度
+- 简单问题：1024-2048
+- 复杂分析：4096-8192
+
+### 🎯 高级玩法
+
+**1. AI辩论赛**
+- 添加多个AI，设置不同立场
+- 使用上下文联动模式
+- 让AI就某个话题展开辩论
+
+**2. 代码评审**
+- 添加擅长编程的AI（Claude、GPT-4）
+- 粘贴代码，让AI从不同角度评审
+- 对比各AI的优化建议
+
+**3. 创意写作**
+- 让不同AI续写同一个故事开头
+- 使用独立观点模式
+- 收集多样化的创意方向
+
+**4. 知识验证**
+- 向多个AI提问同一事实性问题
+- 对比答案的一致性和准确性
+- 识别可能的幻觉信息
 
 ### 📤 导出记录
 
 点击右上角导出按钮，可选择：
 
-- `Markdown` - 带格式的文档
-- `JSON` - 结构化数据
-- `TXT` - 纯文本
+| 格式 | 适用场景 | 特点 |
+|------|---------|------|
+| `Markdown` | 发布博客、文档存档 | 格式美观，支持标题、代码块 |
+| `JSON` | 数据分析、程序处理 | 结构化数据，便于二次开发 |
+| `TXT` | 简单备份、快速查看 | 纯文本，兼容性最好 |
+
+### 💾 数据备份
+
+- 配置自动保存在浏览器本地存储
+- 清除浏览器数据会导致配置丢失
+- 建议定期导出重要聊天记录
 
 ***
 
@@ -133,7 +207,7 @@ start AI群聊plus-max-pro-06.html
 
 <div align="center">
 
-Made with ❤️ by [zhyaceo](https://github.com/zhyace0)
+Made with ❤️ by [zhy-ocean](https://github.com/zhy-ocean)
 
 ⭐ 如果这个项目对你有帮助，请给个Star！
 
